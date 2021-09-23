@@ -6,40 +6,65 @@
 #    By: ikhadem <ikhadem@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/09/21 10:23:48 by ikhadem           #+#    #+#              #
-#    Updated: 2021/09/22 11:27:38 by ikhadem          ###   ########.fr        #
+#    Updated: 2021/09/23 13:23:53 by ikhadem          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME := server
-CLIENT := client
+GREEN		=	\e[38;5;118m
+L_BLUE		=	\e[96m
+RESET		=	\e[0m
+_SUCCESS	=	[$(GREEN)SUCCESS$(RESET)]
+_INFO		=	[$(L_BLUE)INFO$(RESET)]
 
-SRC :=	server.c \
-		client.c \
+NAME	:=
+SERVER	:= server
+CLIENT	:= client
 
-OBJ := $(SRC:.c=.o)
+SERVER_SRC :=	server.c \
+
+CLIENT_SRC :=	client.c \
+
+SERVER_OBJ := $(SERVER_SRC:.c=.o)
+
+CLIENT_OBJ := $(CLIENT_SRC:.c=.o)
 
 CC = gcc
-# FLAG = -Wall -Wextra -Werror
+FLAG = -Wall -Wextra -Werror
 HDR = minitalk.h
-INCLUDE = -I.
+LIB = -L./ft_utils/ -lutils
+INCLUDE = -I. -I./t_stack/ -I./ft_utils/
 
 %.o : %.c $(HDR)
-	$(CC) $(FLAG) $(INCLUDE) -c $< -o $@
+	@$(CC) $(FLAG) $(INCLUDE) -c $< -o $@
 
-all: $(NAME)
+all: $(SERVER) $(CLIENT)
 
-$(NAME) : $(OBJ)
-	$(CC) $(FLAG) $(INCLUDE) server.o -o $(NAME)
-	$(CC) $(FLAG) $(INCLUDE) client.o -o $(CLIENT)
+$(NAME) : all
+
+$(SERVER) : $(SERVER_OBJ)
+	@make -C ./ft_utils/
+	@$(CC) $(FLAG) $(INCLUDE) $(LIB) $(SERVER_OBJ) -o $(SERVER)
+	@printf "$(_SUCCESS) $(SERVER) is ready!.\n"
+
+$(CLIENT) : $(CLIENT_OBJ)
+	@$(CC) $(FLAG) $(INCLUDE) $(LIB) $(CLIENT_OBJ) -o $(CLIENT)
+	@printf "$(_SUCCESS) $(CLIENT) is ready!.\n"
+
 
 clean :
-	rm -f $(OBJ)
+	@make clean -C ./ft_utils/
+	@rm -f $(SERVER_OBJ) $(CLIENT_OBJ)
+	@printf "$(_SUCCESS) $(SERVER)_objects removed!.\n"
+	@printf "$(_SUCCESS) $(CLIENT)_objects removed!.\n"
 
 fclean : clean
-	rm -f $(NAME) $(CLIENT)
+	@make fclean -C ./ft_utils/
+	@rm -f $(SERVER) $(CLIENT)
+	@printf "$(_SUCCESS) $(SERVER)_exec removed!.\n"
+	@printf "$(_SUCCESS) $(CLIENT)_exec removed!.\n"
 
 re : fclean all
 
-bonus: re
+bonus: $(SERVER) $(CLIENT)
 
-.PHONY : all clean fclean re
+.PHONY : all clean fclean re bonus
